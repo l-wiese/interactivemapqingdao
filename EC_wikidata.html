@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+	
+	<title>EASTCITIES - Qingdao</title>
+
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="author" content="Lena Wiese">
+	
+
+<link rel="stylesheet" type="text/css" href="http://cdn.leafletjs.com/leaflet/v1.5.1/leaflet.css" />
+<script type='text/javascript' src='http://cdn.leafletjs.com/leaflet/v1.5.1/leaflet.js'></script>
+<script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+  
+
+<style>
+.languagemarker {color:#AAAAAA;display: inline-block;background-color:#DDDDDD;border:2px solid;padding: 1px;min-width: 20px;}
+
+p.instruction {text-align:center;font-weight:bold;color:#AAAAAA;}
+
+input.mybutton {border:none;min-width:150px;}
+
+table {border:none;padding:1px;}
+</style>
+
+</head>
+<body style="font-family:sans-serif">
+
+<h1>Check out points of interest with Wikidata entries in Qingdao region</h1>
+
+<div id="menue" style="height: 40px;">       
+  &nbsp;<input type = "button" id = "fetch" value = "Fetch Wikidata for nodes" class="mybutton" style="background-color:#0099CC"/>            &horbar;
+  <input type = "button" id = "fetch2" value = "Fetch Wikidata for ways" class="mybutton" style="background-color:#FF6688"/>            &horbar;
+  <input type = "button" id = "fetch3" value = "Fetch Wikidata for relations" class="mybutton" style="background-color:#78AB46"/>      &horbar;
+  <input type = "button" id = "fetch4" value = "Show district boundaries" class="mybutton" style="background-color:#FFAA11"/>
+ &horbar;
+  <input type = "button" id = "clear" value = "Clear map" class="mybutton" style="background-color:#AAAAAA"/> 
+</div>
+
+
+<div id="mapid" style="width: 600px; height: 450px; display: inline-block;"></div>
+
+<div id = "infopane" style = "display: inline-block;vertical-align:top;">
+   <div id = "titleinfo" style = "background-color:#EFEFEF;width: 300px; height: 10px;padding: 10px;text-align:center;font-weight:bold;color:#AAAAAA">Info</div> 
+ 
+   <div id = "display" style = "background-color:#EFEFEF;width: 300px; height: 335px;padding: 10px;">
+      <p class="instruction">&#10102;&nbsp;&nbsp;&nbsp;&#8598; Fetch data</p>
+      <p class="instruction">&#10103;&nbsp;&nbsp;&larr; Click on a point on the map!</p> 
+
+   </div> 
+
+   <div id = "powered" style = "background-color:#EFEFEF;width: 300px; height: 45px;padding: 10px;text-align:right;">
+   <image src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Wikidata_Stamp_Rec_Light.svg/180px-Wikidata_Stamp_Rec_Light.svg.png">
+</div> 
+
+
+
+
+
+<script type = "text/javascript" language="javascript">
+
+	var mymap = L.map('mapid').setView([36.0663, 120.4], 10);
+
+        var osmUrl='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+	var osmAttrib='Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors | powered by <a href="http://overpass-api.de">Overpass-API</a>';
+	var osm = new L.TileLayer(osmUrl, {minZoom: 8, maxZoom: 20, attribution: osmAttrib,subdomains: ['a','b','c']});
+   
+        mymap.addLayer(osm);	
+
+        var loading = new L.ImageOverlay("loading.gif",mymap.getBounds(),{zIndex:500,opacity:0.5});
+
+        var nodemarkers = []; 
+        var waymarkers = []; 
+        var relmarkers = []; 
+        var districtGroup = new L.LayerGroup();
+        districtGroup.addTo(mymap);        
+
+
+        function onMarkerClick(e) {
+           var myheading=this.id;
+           var wikidataid=this.wikidata;
+
+           $.ajax({dataType: "json", url: "https://www.wikidata.org/wiki/Special:EntityData/"+wikidataid+".json"}).done(function ( data ) {
+
+              var enlable = '<tr><td class="languagemarker">en</td>&nbsp;<td>'; 
+              enlable = enlable.concat(data.entities[wikidataid].labels.en ? data.entities[wikidataid].labels.en.value : '<div style="color:#AAAAAA">&lbbrk;no English lable&rbbrk;</div>');
+              enlable = enlable.concat('</td></tr>');
+              var zhlable =  '<tr><td class="languagemarker">zh</td>&nbsp;<td>';
+              zhlable = zhlable.concat(data.entities[wikidataid].labels.zh ? data.entities[wikidataid].labels.zh.value : '<div style="color:#AAAAAA">&lbbrk;no Chinese lable&rbbrk;</div>');
+              zhlable = zhlable.concat('</td></tr>');
+              var delable = '<tr><td class="languagemarker">de</td>&nbsp;<td>'
+              delable = delable.concat(data.entities[wikidataid].labels.de ? data.entities[wikidataid].labels.de.value : '<div style="color:#AAAAAA">&lbbrk;no German lable&rbbrk;</div>');
+              delable = delable.concat('</td></tr>'); 
+              var wikidatalink = '<a href="https://www.wikidata.org/wiki/'+wikidataid+'" target=_blank>'+wikidataid+'</a>&nbsp;&rarrhk;';
+              var wikipedialinks = '<div style="color:#AAAAAA">&lbbrk;none&rbbrk;</div>';
+
+              if( data.entities[wikidataid].sitelinks) {
+                 wikipedialinks = "<table>";
+                 if( data.entities[wikidataid].sitelinks.enwiki) wikipedialinks = wikipedialinks.concat('<tr><td class="languagemarker">en</td>&nbsp;<td><a href="',data.entities[wikidataid].sitelinks.enwiki.url,'" target=_blank>English Link</a>&nbsp;&rarrhk;</td></tr>');
+                 if( data.entities[wikidataid].sitelinks.zhwiki) wikipedialinks = wikipedialinks.concat('<tr><td class="languagemarker">zh</td>&nbsp;<td><a href="',data.entities[wikidataid].sitelinks.zhwiki.url,'" target=_blank>Chinese Link</a>&nbsp;&rarrhk;</td></tr>');
+                 if( data.entities[wikidataid].sitelinks.dewiki) wikipedialinks = wikipedialinks.concat('<tr><td class="languagemarker">de</td>&nbsp;<td><a href="',data.entities[wikidataid].sitelinks.dewiki.url,'" target=_blank>German Link</a>&nbsp;&rarrhk;</td></tr>');
+                 wikipedialinks = wikipedialinks.concat('</table>');
+              }
+
+              $('#display').html('<div style="font-weight:bold;">'+myheading+'</div><table>'+enlable +zhlable + delable+ '</table><div><div style="font-weight:bold; margin-bottom : 0px; margin-top : 20px;">Wikipedia:&nbsp;</div>'+ wikipedialinks +'</div>'+'<div style="margin-top: 10px;"><div style="font-weight:bold;display: inline-block;">Wikidata:&nbsp;</div><div style="display: inline-block;">'+wikidatalink+'</div></div>'); 
+
+           });
+        }
+
+
+        $(document).ready(function() { 
+               
+            $("#fetch").click(function(event){ 
+             //   document.getElementById('fetch').setAttribute('disabled','disabled');
+                event.target.setAttribute('disabled','disabled');
+                loading.setBounds(mymap.getBounds());
+                loading.addTo(mymap).bringToFront();
+
+
+                $.getJSON('http://overpass-api.de/api/interpreter?data=[out:json];node["wikidata"](35.5,119.5,37.14,121.06);out 20;', function(data) { 
+                   
+                for ( var i=0; i < data.elements.length; i++ ) {
+                   nodemarkers[i] = L.circleMarker( [data.elements[i].lat, data.elements[i].lon], {radius: 5, color: '#0099CC', fillColor: 'blue', fillOpacity: 0.9} );
+
+                   var heading = data.elements[i].tags['name:en'] ? data.elements[i].tags['name:en'] : data.elements[i].tags.name;
+
+                   nodemarkers[i].bindTooltip(heading, {opacity:0.9}).addTo( mymap );
+                   var clickcontext = { "id" : heading, "wikidata":  data.elements[i].tags.wikidata };
+                   nodemarkers[i].on('click', onMarkerClick, clickcontext);
+
+                }
+                loading.remove();
+
+                }); 
+            }); 
+        }); 
+
+
+
+        $(document).ready(function() { 
+               
+            $("#fetch2").click(function(event){ 
+              //  document.getElementById('fetch2').setAttribute('disabled','disabled');
+                event.target.setAttribute('disabled','disabled');
+                loading.setBounds(mymap.getBounds());
+                loading.addTo(mymap).bringToFront();
+
+                $.getJSON('http://overpass-api.de/api/interpreter?data=[out:json];way["wikidata"](35.5,119.5,37.14,121.06);out 25 tags center;', function(data) { 
+	
+                for ( var i=0; i < data.elements.length; i++ ) {
+                   waymarkers[i] = L.circleMarker( [data.elements[i].center.lat, data.elements[i].center.lon], {radius: 5, color: '#FF6688', fillColor: '#B22222', fillOpacity: 0.9} );
+
+                   var heading = data.elements[i].tags['name:en'] ? data.elements[i].tags['name:en'] : data.elements[i].tags.name;
+
+                   waymarkers[i].bindTooltip(heading, {opacity:0.9}).addTo( mymap );
+                   var clickcontext = { "id" : heading, "wikidata":  data.elements[i].tags.wikidata };
+                   waymarkers[i].on('click', onMarkerClick,clickcontext);
+                }
+                loading.remove();
+
+                }); 
+            }); 
+        }); 
+
+
+        $(document).ready(function() { 
+               
+            $("#fetch3").click(function(event){ 
+              //  document.getElementById('fetch3').setAttribute('disabled','disabled');
+                event.target.setAttribute('disabled','disabled');
+                loading.setBounds(mymap.getBounds());
+                loading.addTo(mymap).bringToFront();
+
+                $.getJSON('http://overpass-api.de/api/interpreter?data=[out:json];rel["wikidata"](35.5,119.5,37.14,121.06);out 35 tags center;', function(data) { 
+	
+                for ( var i=0; i < data.elements.length; i++ ) {
+                   relmarkers[i] = L.circleMarker( [data.elements[i].center.lat, data.elements[i].center.lon], {radius: 5, color: '#78AB46', fillColor: 'green', fillOpacity: 0.9} );
+                   var heading = data.elements[i].tags['name:en'] ? data.elements[i].tags['name:en'] : data.elements[i].tags.name;
+   
+                   relmarkers[i].bindTooltip(heading, {opacity:0.9}).addTo( mymap );
+                   var clickcontext = { "id" : heading, "wikidata":  data.elements[i].tags.wikidata };
+                   relmarkers[i].on('click', onMarkerClick, clickcontext);
+                }
+                loading.remove();
+                }); 
+
+            }); 
+        }); 
+
+
+
+        $(document).ready(function() { 
+               
+            $("#fetch4").click(function(event){ 
+              //document.getElementById('fetch4').setAttribute('disabled','disabled');
+              event.target.setAttribute('disabled','disabled');
+              var districts = ['Pingdu City', 'Laixi City', 'Jimo', 'Jiaozhou City', 'Huangdao District', 'Shibei District', 'Shinan District', 'Laoshan District', 'Chengyang District', 'Licang District'];
+            
+              for ( var i=0; i < districts.length; i++ ) {
+
+
+                $.getJSON('https://nominatim.openstreetmap.org/search?county='+districts[i]+'&polygon_geojson=1&format=geojson&extratags=1', function(data) { 
+
+
+                   var districtlayer = L.geoJson(data, { style: function (feature) {
+
+                	  switch(data.features[0].properties.display_name.substring(0,4)) {
+                	    case 'Ping':
+                	      return {color: "#AAAA11"};  
+                	    case 'Laix':
+                	      return {color: "#AA11AA"};  
+                	    case 'Jimo':
+                	      return {color: "#11AAAA"}; 
+                	    case 'Jiao':
+                	      return {color: "#11AAFF"};  
+                	    case 'Huan':
+                	      return {color: "#11FFAA"};  
+                	    case 'Shib':
+                	      return {color: "#FF11AA"}; 
+                	    case 'Shin':
+                	      return {color: "#FFAA11"}; 
+                	    case 'Laos':
+                	      return {color: "#AAFF11"}; 
+                	    case 'Chen':
+                	      return {color: "#AA11FF"}; 
+                	    case 'Lica':
+                	      return {color: "#1199AA"};
+                	    default:
+                	      return {color: "#AAAAAA"};  
+                	  }        
+                 	 }
+                   });
+                   districtlayer.bindTooltip(data.features[0].properties.display_name, {sticky : true});
+                   districtGroup.addLayer(districtlayer);
+                   districtlayer.bringToBack()
+                   var clickcontext = { "id" : data.features[0].properties.display_name.split(",",1), "wikidata":  data.features[0].properties.extratags.wikidata };
+                   districtlayer.on('click', onMarkerClick, clickcontext);
+	
+                });
+              }
+            }); 
+        }); 
+
+
+
+        $(document).ready(function() { 
+               
+            $("#clear").click(function(event){
+
+            for ( var i=0; i < nodemarkers.length; i++ ) { 
+               nodemarkers[i].remove();
+            }
+
+            for ( var i=0; i < waymarkers.length; i++ ) { 
+               waymarkers[i].remove();
+            }
+
+            for ( var i=0; i < relmarkers.length; i++ ) { 
+               relmarkers[i].remove();
+            }
+
+            districtGroup.clearLayers();
+            $('#display').html('');
+
+            document.getElementById('fetch').removeAttribute('disabled');
+            document.getElementById('fetch2').removeAttribute('disabled');
+            document.getElementById('fetch3').removeAttribute('disabled');
+            document.getElementById('fetch4').removeAttribute('disabled'); 
+            }); 
+        }); 
+
+
+      </script> 
+
+</body>
+</html>
