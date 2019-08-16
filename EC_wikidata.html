@@ -135,8 +135,10 @@ table {border:none;padding:1px;}
                    nodesGroup.addLayer(nodemarker);
                    load1 = false;
                 }
-                if (!load1 && !load2 && !load3) {loading.remove();}
-                document.getElementById('clear').removeAttribute('disabled');
+                if (!load1 && !load2 && !load3) {
+                   loading.remove();
+                   document.getElementById('clear').removeAttribute('disabled');
+                }
                 }); 
             }); 
         }); 
@@ -165,8 +167,10 @@ table {border:none;padding:1px;}
                    waysGroup.addLayer(waymarker);
                    load2 = false;
                 }
-                if (!load1 && !load2 && !load3) {loading.remove();}
-                document.getElementById('clear').removeAttribute('disabled');
+                if (!load1 && !load2 && !load3) {
+                   loading.remove();
+                   document.getElementById('clear').removeAttribute('disabled');
+                }
                 }); 
             }); 
         }); 
@@ -193,8 +197,10 @@ table {border:none;padding:1px;}
                    relsGroup.addLayer(relmarker);
                    load3= false;
                 }
-                if (!load1 && !load2 && !load3) {loading.remove();}
-                document.getElementById('clear').removeAttribute('disabled');
+                if (!load1 && !load2 && !load3) {
+                   loading.remove();
+                   document.getElementById('clear').removeAttribute('disabled');
+                }
                 }); 
 
             }); 
@@ -281,6 +287,7 @@ table {border:none;padding:1px;}
             document.getElementById('fetch2').removeAttribute('disabled');
             document.getElementById('fetch3').removeAttribute('disabled');
             document.getElementById('fetch4').removeAttribute('disabled'); 
+            loading.remove();
             }); 
         }); 
 
