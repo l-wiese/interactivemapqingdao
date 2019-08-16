@@ -29,7 +29,7 @@ table {border:none;padding:1px;}
 
 <h1>Check out points of interest with Wikidata entries in Qingdao region</h1>
 
-<div id="menue" style="height: 40px;">       
+<div id="menue" style="height: 40px;overflow-x: auto;white-space: nowrap;">       
   &nbsp;<input type = "button" id = "fetch" value = "Fetch Wikidata for nodes" class="mybutton" style="background-color:#0099CC"/>            &horbar;
   <input type = "button" id = "fetch2" value = "Fetch Wikidata for ways" class="mybutton" style="background-color:#FF6688"/>            &horbar;
   <input type = "button" id = "fetch3" value = "Fetch Wikidata for relations" class="mybutton" style="background-color:#78AB46"/>      &horbar;
@@ -39,22 +39,20 @@ table {border:none;padding:1px;}
 </div>
 
 
-<div id="mapid" style="width: 600px; height: 450px; display: inline-block;"></div>
 
+<div style = "white-space: nowrap;overflow-x: auto;">
 <div id = "infopane" style = "display: inline-block;vertical-align:top;">
    <div id = "titleinfo" style = "background-color:#EFEFEF;width: 300px; height: 10px;padding: 10px;text-align:center;font-weight:bold;color:#AAAAAA">Info</div> 
  
-   <div id = "display" style = "background-color:#EFEFEF;width: 300px; height: 335px;padding: 10px;">
-      <p class="instruction">&#10102;&nbsp;&nbsp;&nbsp;&#8598; Fetch data</p>
-      <p class="instruction">&#10103;&nbsp;&nbsp;&larr; Click on a point on the map!</p> 
-
+   <div id = "display" style = "background-color:#EFEFEF;width: 300px; height: 335px;padding: 10px;white-space: normal;">
    </div> 
 
    <div id = "powered" style = "background-color:#EFEFEF;width: 300px; height: 45px;padding: 10px;text-align:right;">
    <image src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Wikidata_Stamp_Rec_Light.svg/180px-Wikidata_Stamp_Rec_Light.svg.png">
+   </div> 
 </div> 
-
-
+<div id="mapid" style="width: 600px; height: 450px; display: inline-block;"></div>
+</div> 
 
 
 
@@ -68,13 +66,18 @@ table {border:none;padding:1px;}
    
         mymap.addLayer(osm);	
 
+        var load1, load2, load3 = false;
         var loading = new L.ImageOverlay("loading.gif",mymap.getBounds(),{zIndex:500,opacity:0.5});
 
-        var nodemarkers = []; 
-        var waymarkers = []; 
-        var relmarkers = []; 
+
         var districtGroup = new L.LayerGroup();
-        districtGroup.addTo(mymap);        
+        districtGroup.addTo(mymap);  
+        var nodesGroup = new L.LayerGroup();
+        nodesGroup.addTo(mymap); 
+        var waysGroup = new L.LayerGroup();
+        waysGroup.addTo(mymap); 
+        var relsGroup = new L.LayerGroup();
+        relsGroup.addTo(mymap); 
 
 
         function onMarkerClick(e) {
@@ -112,8 +115,9 @@ table {border:none;padding:1px;}
         $(document).ready(function() { 
                
             $("#fetch").click(function(event){ 
-             //   document.getElementById('fetch').setAttribute('disabled','disabled');
+                load1 = true;
                 event.target.setAttribute('disabled','disabled');
+                document.getElementById('clear').setAttribute('disabled','disabled');
                 loading.setBounds(mymap.getBounds());
                 loading.addTo(mymap).bringToFront();
 
@@ -121,17 +125,18 @@ table {border:none;padding:1px;}
                 $.getJSON('http://overpass-api.de/api/interpreter?data=[out:json];node["wikidata"](35.5,119.5,37.14,121.06);out 20;', function(data) { 
                    
                 for ( var i=0; i < data.elements.length; i++ ) {
-                   nodemarkers[i] = L.circleMarker( [data.elements[i].lat, data.elements[i].lon], {radius: 5, color: '#0099CC', fillColor: 'blue', fillOpacity: 0.9} );
+                   var nodemarker = L.circleMarker( [data.elements[i].lat, data.elements[i].lon], {radius: 5, color: '#0099CC', fillColor: 'blue', fillOpacity: 0.9} );
 
                    var heading = data.elements[i].tags['name:en'] ? data.elements[i].tags['name:en'] : data.elements[i].tags.name;
 
-                   nodemarkers[i].bindTooltip(heading, {opacity:0.9}).addTo( mymap );
+                   nodemarker.bindTooltip(heading, {opacity:0.9}).addTo( mymap );
                    var clickcontext = { "id" : heading, "wikidata":  data.elements[i].tags.wikidata };
-                   nodemarkers[i].on('click', onMarkerClick, clickcontext);
-
+                   nodemarker.on('click', onMarkerClick, clickcontext);
+                   nodesGroup.addLayer(nodemarker);
+                   load1 = false;
                 }
-                loading.remove();
-
+                if (!load1 && !load2 && !load3) {loading.remove();}
+                document.getElementById('clear').removeAttribute('disabled');
                 }); 
             }); 
         }); 
@@ -141,24 +146,27 @@ table {border:none;padding:1px;}
         $(document).ready(function() { 
                
             $("#fetch2").click(function(event){ 
-              //  document.getElementById('fetch2').setAttribute('disabled','disabled');
+                load2 = true;
                 event.target.setAttribute('disabled','disabled');
+                document.getElementById('clear').setAttribute('disabled','disabled');
                 loading.setBounds(mymap.getBounds());
                 loading.addTo(mymap).bringToFront();
 
                 $.getJSON('http://overpass-api.de/api/interpreter?data=[out:json];way["wikidata"](35.5,119.5,37.14,121.06);out 25 tags center;', function(data) { 
 	
                 for ( var i=0; i < data.elements.length; i++ ) {
-                   waymarkers[i] = L.circleMarker( [data.elements[i].center.lat, data.elements[i].center.lon], {radius: 5, color: '#FF6688', fillColor: '#B22222', fillOpacity: 0.9} );
+                   var waymarker = L.circleMarker( [data.elements[i].center.lat, data.elements[i].center.lon], {radius: 5, color: '#FF6688', fillColor: '#B22222', fillOpacity: 0.9} );
 
                    var heading = data.elements[i].tags['name:en'] ? data.elements[i].tags['name:en'] : data.elements[i].tags.name;
 
-                   waymarkers[i].bindTooltip(heading, {opacity:0.9}).addTo( mymap );
+                   waymarker.bindTooltip(heading, {opacity:0.9}).addTo( mymap );
                    var clickcontext = { "id" : heading, "wikidata":  data.elements[i].tags.wikidata };
-                   waymarkers[i].on('click', onMarkerClick,clickcontext);
+                   waymarker.on('click', onMarkerClick,clickcontext);
+                   waysGroup.addLayer(waymarker);
+                   load2 = false;
                 }
-                loading.remove();
-
+                if (!load1 && !load2 && !load3) {loading.remove();}
+                document.getElementById('clear').removeAttribute('disabled');
                 }); 
             }); 
         }); 
@@ -167,22 +175,26 @@ table {border:none;padding:1px;}
         $(document).ready(function() { 
                
             $("#fetch3").click(function(event){ 
-              //  document.getElementById('fetch3').setAttribute('disabled','disabled');
+                load3 = true;
                 event.target.setAttribute('disabled','disabled');
+                document.getElementById('clear').setAttribute('disabled','disabled');
                 loading.setBounds(mymap.getBounds());
                 loading.addTo(mymap).bringToFront();
 
                 $.getJSON('http://overpass-api.de/api/interpreter?data=[out:json];rel["wikidata"](35.5,119.5,37.14,121.06);out 35 tags center;', function(data) { 
 	
                 for ( var i=0; i < data.elements.length; i++ ) {
-                   relmarkers[i] = L.circleMarker( [data.elements[i].center.lat, data.elements[i].center.lon], {radius: 5, color: '#78AB46', fillColor: 'green', fillOpacity: 0.9} );
+                   var relmarker = L.circleMarker( [data.elements[i].center.lat, data.elements[i].center.lon], {radius: 5, color: '#78AB46', fillColor: 'green', fillOpacity: 0.9} );
                    var heading = data.elements[i].tags['name:en'] ? data.elements[i].tags['name:en'] : data.elements[i].tags.name;
    
-                   relmarkers[i].bindTooltip(heading, {opacity:0.9}).addTo( mymap );
+                   relmarker.bindTooltip(heading, {opacity:0.9}).addTo( mymap );
                    var clickcontext = { "id" : heading, "wikidata":  data.elements[i].tags.wikidata };
-                   relmarkers[i].on('click', onMarkerClick, clickcontext);
+                   relmarker.on('click', onMarkerClick, clickcontext);
+                   relsGroup.addLayer(relmarker);
+                   load3= false;
                 }
-                loading.remove();
+                if (!load1 && !load2 && !load3) {loading.remove();}
+                document.getElementById('clear').removeAttribute('disabled');
                 }); 
 
             }); 
@@ -193,7 +205,6 @@ table {border:none;padding:1px;}
         $(document).ready(function() { 
                
             $("#fetch4").click(function(event){ 
-              //document.getElementById('fetch4').setAttribute('disabled','disabled');
               event.target.setAttribute('disabled','disabled');
               var districts = ['Pingdu City', 'Laixi City', 'Jimo', 'Jiaozhou City', 'Huangdao District', 'Shibei District', 'Shinan District', 'Laoshan District', 'Chengyang District', 'Licang District'];
             
@@ -242,26 +253,29 @@ table {border:none;padding:1px;}
             }); 
         }); 
 
+        function showInstructions(){
+           $('#display').html('<p class="instruction">&#10102;&nbsp;&nbsp;&nbsp; Fetch data&nbsp;&uarr;</p><p class="instruction">&#10103;&nbsp;&nbsp; Click on a point on the map&nbsp;&rarr;</p> ');
 
+        }
+
+
+
+        $(document).ready(function() { 
+            showInstructions(); 
+        }); 
+
+        
 
         $(document).ready(function() { 
                
             $("#clear").click(function(event){
 
-            for ( var i=0; i < nodemarkers.length; i++ ) { 
-               nodemarkers[i].remove();
-            }
-
-            for ( var i=0; i < waymarkers.length; i++ ) { 
-               waymarkers[i].remove();
-            }
-
-            for ( var i=0; i < relmarkers.length; i++ ) { 
-               relmarkers[i].remove();
-            }
 
             districtGroup.clearLayers();
-            $('#display').html('');
+            nodesGroup.clearLayers();
+            waysGroup.clearLayers();
+            relsGroup.clearLayers();
+            showInstructions();
 
             document.getElementById('fetch').removeAttribute('disabled');
             document.getElementById('fetch2').removeAttribute('disabled');
