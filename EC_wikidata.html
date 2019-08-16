@@ -216,26 +216,26 @@ table {border:none;padding:1px;}
 
                    var districtlayer = L.geoJson(data, { style: function (feature) {
 
-                	  switch(data.features[0].properties.display_name.substring(0,4)) {
-                	    case 'Ping':
+                	  switch(data.features[0].properties.extratags.wikidata) {
+                	    case 'Q2060398':
                 	      return {color: "#AAAA11"};  
-                	    case 'Laix':
+                	    case 'Q1198038':
                 	      return {color: "#AA11AA"};  
-                	    case 'Jimo':
+                	    case 'Q713349':
                 	      return {color: "#11AAAA"}; 
-                	    case 'Jiao':
+                	    case 'Q289051':
                 	      return {color: "#11AAFF"};  
-                	    case 'Huan':
+                	    case 'Q962688':
                 	      return {color: "#11FFAA"};  
-                	    case 'Shib':
+                	    case 'Q1198406':
                 	      return {color: "#FF11AA"}; 
-                	    case 'Shin':
+                	    case 'Q1198158':
                 	      return {color: "#FFAA11"}; 
-                	    case 'Laos':
+                	    case 'Q181352':
                 	      return {color: "#AAFF11"}; 
-                	    case 'Chen':
+                	    case 'Q182982':
                 	      return {color: "#AA11FF"}; 
-                	    case 'Lica':
+                	    case 'Q1198495':
                 	      return {color: "#1199AA"};
                 	    default:
                 	      return {color: "#AAAAAA"};  
