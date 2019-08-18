@@ -19,7 +19,7 @@
 
 p.instruction {text-align:center;font-weight:bold;color:#AAAAAA;}
 
-input.mybutton {border:none;min-width:150px;}
+input.mybutton {border:none;min-width:130px;}
 
 table {border:none;padding:1px;}
 </style>
@@ -29,13 +29,19 @@ table {border:none;padding:1px;}
 
 <h1>Check out points of interest with Wikidata entries in Qingdao region</h1>
 
-<div id="menue" style="height: 40px;overflow-x: auto;white-space: nowrap;">       
-  &nbsp;<input type = "button" id = "fetch" value = "Fetch Wikidata for nodes" class="mybutton" style="background-color:#0099CC"/>            &horbar;
-  <input type = "button" id = "fetch2" value = "Fetch Wikidata for ways" class="mybutton" style="background-color:#FF6688"/>            &horbar;
-  <input type = "button" id = "fetch3" value = "Fetch Wikidata for relations" class="mybutton" style="background-color:#78AB46"/>      &horbar;
-  <input type = "button" id = "fetch4" value = "Show district boundaries" class="mybutton" style="background-color:#FFAA11"/>
- &horbar;
-  <input type = "button" id = "clear" value = "Clear map" class="mybutton" style="background-color:#AAAAAA"/> 
+<div id="menue" style="overflow-x: auto;white-space: nowrap;">   
+<table>
+<tr><td style="color:#AAAAAA">Remove all markers</td><td style="color:#AAAAAA">&rArr;</td><td><input type = "button" id = "clear" value = "Clear map" class="mybutton" style="background-color:#AAAAAA"/></td></tr>
+<tr><td style="color:#AAAAAA">Fetch data from Openstreetmap</td><td style="color:#AAAAAA">&rArr;</td><td><input type = "button" id = "fetch" value = "Nodes" class="mybutton" style="background-color:#0099CC"/> &horbar;
+  <input type = "button" id = "fetch2" value = "Ways" class="mybutton" style="background-color:#FF6688"/>            &horbar;
+  <input type = "button" id = "fetch3" value = "Relations" class="mybutton" style="background-color:#78AB46"/>      </td></tr>
+<tr><td style="color:#AAAAAA">Fetch data from Nominatim</td><td style="color:#AAAAAA">&rArr;</td><td> <input type = "button" id = "fetch4" value = "District boundaries" class="mybutton" style="background-color:#FFAA11"/></td></tr>
+<tr><td style="color:#AAAAAA">Fetch data from Wikidata</td><td style="color:#AAAAAA">&rArr;</td><td><input type = "button" id = "fetch5" value = "Locations" class="mybutton" style="background-color:#DA70D6"/> &horbar;
+  <input type = "button" id = "fetch6" value = "Events" class="mybutton" style="background-color:#CD853F"/></td></tr>
+</table>
+    
+
+   
 </div>
 
 
@@ -66,7 +72,7 @@ table {border:none;padding:1px;}
    
         mymap.addLayer(osm);	
 
-        var load1, load2, load3 = false;
+        var load1, load2, load3, load5, load6 = false;
         var loading = new L.ImageOverlay("loading.gif",mymap.getBounds(),{zIndex:500,opacity:0.5});
 
 
@@ -78,6 +84,10 @@ table {border:none;padding:1px;}
         waysGroup.addTo(mymap); 
         var relsGroup = new L.LayerGroup();
         relsGroup.addTo(mymap); 
+        var locsGroup = new L.LayerGroup();
+        locsGroup.addTo(mymap); 
+        var eventsGroup = new L.LayerGroup();
+        eventsGroup.addTo(mymap); 
 
 
         function onMarkerClick(e) {
@@ -86,15 +96,15 @@ table {border:none;padding:1px;}
 
            $.ajax({dataType: "json", url: "https://www.wikidata.org/wiki/Special:EntityData/"+wikidataid+".json"}).done(function ( data ) {
 
-              var enlable = '<tr><td class="languagemarker">en</td>&nbsp;<td>'; 
-              enlable = enlable.concat(data.entities[wikidataid].labels.en ? data.entities[wikidataid].labels.en.value : '<div style="color:#AAAAAA">&lbbrk;no English lable&rbbrk;</div>');
-              enlable = enlable.concat('</td></tr>');
-              var zhlable =  '<tr><td class="languagemarker">zh</td>&nbsp;<td>';
-              zhlable = zhlable.concat(data.entities[wikidataid].labels.zh ? data.entities[wikidataid].labels.zh.value : '<div style="color:#AAAAAA">&lbbrk;no Chinese lable&rbbrk;</div>');
-              zhlable = zhlable.concat('</td></tr>');
-              var delable = '<tr><td class="languagemarker">de</td>&nbsp;<td>'
-              delable = delable.concat(data.entities[wikidataid].labels.de ? data.entities[wikidataid].labels.de.value : '<div style="color:#AAAAAA">&lbbrk;no German lable&rbbrk;</div>');
-              delable = delable.concat('</td></tr>'); 
+              var enlabel = '<tr><td class="languagemarker">en</td>&nbsp;<td>'; 
+              enlabel = enlabel.concat(data.entities[wikidataid].labels.en ? data.entities[wikidataid].labels.en.value : '<div style="color:#AAAAAA">&lbbrk;no English label&rbbrk;</div>');
+              enlabel = enlabel.concat('</td></tr>');
+              var zhlabel =  '<tr><td class="languagemarker">zh</td>&nbsp;<td>';
+              zhlabel = zhlabel.concat(data.entities[wikidataid].labels.zh ? data.entities[wikidataid].labels.zh.value : '<div style="color:#AAAAAA">&lbbrk;no Chinese label&rbbrk;</div>');
+              zhlabel = zhlabel.concat('</td></tr>');
+              var delabel = '<tr><td class="languagemarker">de</td>&nbsp;<td>'
+              delabel = delabel.concat(data.entities[wikidataid].labels.de ? data.entities[wikidataid].labels.de.value : '<div style="color:#AAAAAA">&lbbrk;no German label&rbbrk;</div>');
+              delabel = delabel.concat('</td></tr>'); 
               var wikidatalink = '<a href="https://www.wikidata.org/wiki/'+wikidataid+'" target=_blank>'+wikidataid+'</a>&nbsp;&rarrhk;';
               var wikipedialinks = '<div style="color:#AAAAAA">&lbbrk;none&rbbrk;</div>';
 
@@ -106,10 +116,53 @@ table {border:none;padding:1px;}
                  wikipedialinks = wikipedialinks.concat('</table>');
               }
 
-              $('#display').html('<div style="font-weight:bold;">'+myheading+'</div><table>'+enlable +zhlable + delable+ '</table><div><div style="font-weight:bold; margin-bottom : 0px; margin-top : 20px;">Wikipedia:&nbsp;</div>'+ wikipedialinks +'</div>'+'<div style="margin-top: 10px;"><div style="font-weight:bold;display: inline-block;">Wikidata:&nbsp;</div><div style="display: inline-block;">'+wikidatalink+'</div></div>'); 
+              $('#display').html('<div style="font-weight:bold;">'+myheading+'</div><table>'+enlabel +zhlabel + delabel+ '</table><div><div style="font-weight:bold; margin-bottom : 0px; margin-top : 20px;">Wikipedia:&nbsp;</div>'+ wikipedialinks +'</div>'+'<div style="margin-top: 10px;"><div style="font-weight:bold;display: inline-block;">Wikidata:&nbsp;</div><div style="display: inline-block;">'+wikidatalink+'</div></div>'); 
 
            });
         }
+
+
+        function onMarkerClick2(e) {
+              var myheading=this.id;
+              var wikidataid=this.wikidata;
+              var enlabel = '<tr><td class="languagemarker">en</td>&nbsp;<td>'; 
+              if(this.nameen!=undefined && this.nameen!=wikidataid) {
+                  enlabel = enlabel.concat(this.nameen);} 
+              else {
+                  enlabel = enlabel.concat('<div style="color:#AAAAAA">&lbbrk;no English label&rbbrk;</div>');
+              }
+              enlabel = enlabel.concat('</td></tr>');
+              var zhlabel =  '<tr><td class="languagemarker">zh</td>&nbsp;<td>';
+              if(this.namezh!=undefined && this.namezh!=wikidataid) {
+                  zhlabel = zhlabel.concat(this.namezh);} 
+              else {
+                  zhlabel = zhlabel.concat('<div style="color:#AAAAAA">&lbbrk;no Chinese label&rbbrk;</div>');
+              }
+              zhlabel = zhlabel.concat('</td></tr>');
+              var delabel = '<tr><td class="languagemarker">de</td>&nbsp;<td>'
+              if(this.namede!=undefined && this.namede!=wikidataid) {
+                  delabel = delabel.concat(this.namede);} 
+              else {
+                  delabel = delabel.concat('<div style="color:#AAAAAA">&lbbrk;no German label&rbbrk;</div>');
+              }
+              delabel = delabel.concat('</td></tr>'); 
+              var wikidatalink = '<a href="https://www.wikidata.org/wiki/'+wikidataid+'" target=_blank>'+wikidataid+'</a>&nbsp;&rarrhk;';
+              var wikipedialinks =  "<table>";
+              if(this.wikipediaen!=undefined) {
+                   wikipedialinks = wikipedialinks.concat('<tr><td class="languagemarker">en</td>&nbsp;<td><a href="',this.wikipediaen,'" target=_blank>English Link</a>&nbsp;&rarrhk;</td></tr>');
+              }
+              if(this.wikipediazh!=undefined) {
+                   wikipedialinks = wikipedialinks.concat('<tr><td class="languagemarker">zh</td>&nbsp;<td><a href="',this.wikipediazh,'" target=_blank>Chinese Link</a>&nbsp;&rarrhk;</td></tr>');
+              }
+              if(this.wikipediade!=undefined) {
+                   wikipedialinks = wikipedialinks.concat('<tr><td class="languagemarker">de</td>&nbsp;<td><a href="',this.wikipediade,'" target=_blank>German Link</a>&nbsp;&rarrhk;</td></tr>');
+              }
+              wikipedialinks = wikipedialinks.concat('</table>');
+              $('#display').html('<div style="font-weight:bold;">'+myheading+'</div><table>'+enlabel +zhlabel + delabel+ '</table><div><div style="font-weight:bold; margin-bottom : 0px; margin-top : 20px;">Wikipedia:&nbsp;</div>'+ wikipedialinks +'</div>'+'<div style="margin-top: 10px;"><div style="font-weight:bold;display: inline-block;">Wikidata:&nbsp;</div><div style="display: inline-block;">'+wikidatalink+'</div></div>'); 
+
+           
+        }
+
 
 
         $(document).ready(function() { 
@@ -135,7 +188,7 @@ table {border:none;padding:1px;}
                    nodesGroup.addLayer(nodemarker);
                    load1 = false;
                 }
-                if (!load1 && !load2 && !load3) {
+                if (!load1 && !load2 && !load3 && !load5 && !load6) {
                    loading.remove();
                    document.getElementById('clear').removeAttribute('disabled');
                 }
@@ -167,7 +220,7 @@ table {border:none;padding:1px;}
                    waysGroup.addLayer(waymarker);
                    load2 = false;
                 }
-                if (!load1 && !load2 && !load3) {
+                if (!load1 && !load2 && !load3 && !load5 && !load6) {
                    loading.remove();
                    document.getElementById('clear').removeAttribute('disabled');
                 }
@@ -197,7 +250,7 @@ table {border:none;padding:1px;}
                    relsGroup.addLayer(relmarker);
                    load3= false;
                 }
-                if (!load1 && !load2 && !load3) {
+                if (!load1 && !load2 && !load3 && !load5 && !load6) {
                    loading.remove();
                    document.getElementById('clear').removeAttribute('disabled');
                 }
@@ -259,6 +312,88 @@ table {border:none;padding:1px;}
             }); 
         }); 
 
+
+
+        $(document).ready(function() { 
+               
+            $("#fetch5").click(function(event){ 
+                load5 = true;
+                event.target.setAttribute('disabled','disabled');
+                document.getElementById('clear').setAttribute('disabled','disabled');
+                loading.setBounds(mymap.getBounds());
+                loading.addTo(mymap).bringToFront();
+
+                $.getJSON('https://query.wikidata.org/sparql?query=SELECT%20%3Fitem%20%3FitemLabel%20%3Fnamezh%20%3Fnamede%20%3Fsitelinken%20%3Fsitelinkzh%20%3Fsitelinkde%20%3Fcoord%20%3Flon%20%3Flat%0AWHERE%0A{%0A%20{%3Fitem%20wdt%3AP131%20wd%3AQ170322}%0A%20%20UNION%0A%20{%3Fdistrict%20wdt%3AP131%20wd%3AQ170322.%0A%20%20%3Fitem%20wdt%3AP131%20%3Fdistrict%20}%0A%20%3Fitem%20p%3AP625%20%3Fcoordinate.%0A%20%3Fcoordinate%20ps%3AP625%20%3Fcoord.%0A%20%3Fcoordinate%20psv%3AP625%20%3Fcoordinate_node.%0A%20%3Fcoordinate_node%20wikibase%3AgeoLongitude%20%3Flon.%0A%20%3Fcoordinate_node%20wikibase%3AgeoLatitude%20%3Flat.%20%20%0A%20SERVICE%20wikibase%3Alabel%20{%20bd%3AserviceParam%20wikibase%3Alanguage%20%22en%22.%20}%20%0A%20SERVICE%20wikibase%3Alabel%20{%20bd%3AserviceParam%20wikibase%3Alanguage%20%22de%22%20.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Fitem%20%20rdfs%3Alabel%20%3Fnamede.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20}%20%0A%20SERVICE%20wikibase%3Alabel%20{%20bd%3AserviceParam%20wikibase%3Alanguage%20%22zh%22%20.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Fitem%20%20rdfs%3Alabel%20%3Fnamezh.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20}%0A%20OPTIONAL%20{%3Fsitelinken%20schema%3Aabout%20%3Fitem%20.%0A%20FILTER%20(REGEX(STR(%3Fsitelinken)%2C%20%22en.wikipedia.org%2Fwiki%2F%22))%20.}%0A%20OPTIONAL%20{%3Fsitelinkde%20schema%3Aabout%20%3Fitem%20.%0A%20FILTER%20(REGEX(STR(%3Fsitelinkde)%2C%20%22de.wikipedia.org%2Fwiki%2F%22))%20.}%0A%20OPTIONAL%20{%3Fsitelinkzh%20schema%3Aabout%20%3Fitem%20.%0A%20FILTER%20(REGEX(STR(%3Fsitelinkzh)%2C%20%22zh.wikipedia.org%2Fwiki%2F%22))%20.}%0A%0A}&format=json', function(data) { 
+	
+                for ( var i=0; i < data.results.bindings.length; i++ ) {
+                   var locmarker = L.circleMarker( [data.results.bindings[i].lat.value, data.results.bindings[i].lon.value], {radius: 5, color: '#DA70D6', fillColor: '#9932CC', fillOpacity: 0.9} );
+
+                   var wikidataid = data.results.bindings[i].item.value;
+                   wikidataid = wikidataid.substring(wikidataid.lastIndexOf('Q'),wikidataid.length);
+                   var heading = data.results.bindings[i].itemLabel ? data.results.bindings[i].itemLabel.value : wikidataid;
+                   if (heading == wikidataid && data.results.bindings[i].namezh) {heading = data.results.bindings[i].namezh.value;}
+                   locmarker.bindTooltip(heading, {opacity:0.9}).addTo( mymap );
+                   var clickcontext = { "id" : heading, "wikidata":  wikidataid, "nameen" : data.results.bindings[i].itemLabel.value, "namezh" :  data.results.bindings[i].namezh.value, "namede" :  data.results.bindings[i].namede.value };
+                   if( data.results.bindings[i].sitelinken) { clickcontext["wikipediaen"]=data.results.bindings[i].sitelinken.value;}
+                   if( data.results.bindings[i].sitelinkzh) { clickcontext["wikipediazh"]=data.results.bindings[i].sitelinkzh.value;}
+                   if( data.results.bindings[i].sitelinkde) { clickcontext["wikipediade"]=data.results.bindings[i].sitelinkde.value;}
+                   locmarker.on('click', onMarkerClick2, clickcontext);
+                   locsGroup.addLayer(locmarker);
+                   load5= false;
+                }
+                if (!load1 && !load2 && !load3 && !load5 && !load6) {
+                   loading.remove();
+                   document.getElementById('clear').removeAttribute('disabled');
+                }
+                }); 
+
+            }); 
+        }); 
+
+
+
+
+        $(document).ready(function() { 
+               
+            $("#fetch6").click(function(event){ 
+                load5 = true;
+                event.target.setAttribute('disabled','disabled');
+                document.getElementById('clear').setAttribute('disabled','disabled');
+                loading.setBounds(mymap.getBounds());
+                loading.addTo(mymap).bringToFront();
+
+                $.getJSON('https://query.wikidata.org/sparql?query=SELECT %3Fitem %3FitemLabel %3Fnamezh %3Fnamede %3Fsitelinken %3Fsitelinkzh %3Fsitelinkde %3Fcoord %3Flon %3Flat%0AWHERE%0A{%0A %3Fitem wdt%3AP276 wd%3AQ170322.%0A %3Fitem p%3AP625 %3Fcoordinate.%0A %3Fcoordinate ps%3AP625 %3Fcoord.%0A %3Fcoordinate psv%3AP625 %3Fcoordinate_node.%0A %3Fcoordinate_node wikibase%3AgeoLongitude %3Flon.%0A %3Fcoordinate_node wikibase%3AgeoLatitude %3Flat.%20%20%0A SERVICE wikibase%3Alabel { bd%3AserviceParam wikibase%3Alanguage "en". }%20%0A SERVICE wikibase%3Alabel { bd%3AserviceParam wikibase%3Alanguage "de" .%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20 %3Fitem%20 rdfs%3Alabel %3Fnamede.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20 }%20%0A SERVICE wikibase%3Alabel { bd%3AserviceParam wikibase%3Alanguage "zh" .%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20 %3Fitem%20 rdfs%3Alabel %3Fnamezh.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20 }%0A OPTIONAL {%3Fsitelinken schema%3Aabout %3Fitem .%0A FILTER (REGEX(STR(%3Fsitelinken)%2C "en.wikipedia.org%2Fwiki%2F")) .}%0A OPTIONAL {%3Fsitelinkde schema%3Aabout %3Fitem .%0A FILTER (REGEX(STR(%3Fsitelinkde)%2C "de.wikipedia.org%2Fwiki%2F")) .}%0A OPTIONAL {%3Fsitelinkzh schema%3Aabout %3Fitem .%0A FILTER (REGEX(STR(%3Fsitelinkzh)%2C "zh.wikipedia.org%2Fwiki%2F")) .}%0A%0A}%0A%0A&format=json', function(data) { 
+	
+                for ( var i=0; i < data.results.bindings.length; i++ ) {
+                   var locmarker = L.circleMarker( [data.results.bindings[i].lat.value, data.results.bindings[i].lon.value], {radius: 5, color: '#CD853F', fillColor: '#A0522D', fillOpacity: 0.9} );
+
+                   var wikidataid = data.results.bindings[i].item.value;
+                   wikidataid = wikidataid.substring(wikidataid.lastIndexOf('Q'),wikidataid.length);
+                   var heading = data.results.bindings[i].itemLabel ? data.results.bindings[i].itemLabel.value : wikidataid;
+
+console.log('heading: ',heading);
+                   locmarker.bindTooltip(heading, {opacity:0.9}).addTo( mymap );
+                   var clickcontext = { "id" : heading, "wikidata":  wikidataid, "nameen" : data.results.bindings[i].itemLabel.value, "namezh" :  data.results.bindings[i].namezh.value, "namede" :  data.results.bindings[i].namede.value };
+                   if( data.results.bindings[i].sitelinken) { clickcontext["wikipediaen"]=data.results.bindings[i].sitelinken.value;}
+                   if( data.results.bindings[i].sitelinkzh) { clickcontext["wikipediazh"]=data.results.bindings[i].sitelinkzh.value;}
+                   if( data.results.bindings[i].sitelinkde) { clickcontext["wikipediade"]=data.results.bindings[i].sitelinkde.value;}
+                   locmarker.on('click', onMarkerClick2, clickcontext);
+                   locsGroup.addLayer(locmarker);
+                   load5= false;
+                }
+                if (!load1 && !load2 && !load3 && !load5 && !load6) {
+                   loading.remove();
+                   document.getElementById('clear').removeAttribute('disabled');
+                }
+                }); 
+
+            }); 
+        }); 
+
+
+
+
+
         function showInstructions(){
            $('#display').html('<p class="instruction">&#10102;&nbsp;&nbsp;&nbsp; Fetch data&nbsp;&uarr;</p><p class="instruction">&#10103;&nbsp;&nbsp; Click on a point on the map&nbsp;&rarr;</p> ');
 
@@ -281,12 +416,16 @@ table {border:none;padding:1px;}
             nodesGroup.clearLayers();
             waysGroup.clearLayers();
             relsGroup.clearLayers();
+            locsGroup.clearLayers();
+            eventsGroup.clearLayers();
             showInstructions();
 
             document.getElementById('fetch').removeAttribute('disabled');
             document.getElementById('fetch2').removeAttribute('disabled');
             document.getElementById('fetch3').removeAttribute('disabled');
             document.getElementById('fetch4').removeAttribute('disabled'); 
+            document.getElementById('fetch5').removeAttribute('disabled'); 
+            document.getElementById('fetch6').removeAttribute('disabled'); 
             loading.remove();
             }); 
         }); 
